@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
           8. VALID layoutTemplate values: [SaaS, Editorial, Boutique, Corporate, SplitHero, MinimalLead, ProductShowcase]
 
          Format: { "headline": "...", "subheadline": "...", "benefits": [...], "featureBreakdown": [...], "socialProofPlaceholder": "...", "pricing": "...", "cta": "...", "styleHint": "...", "layoutTemplate": "..." }`
-      : `You are a world-class creative director and copywriter. Your task is to generate a UNIQUE and DIVERSE sales page every single time.
-
+      : `You are a world-class creative director and copywriter. Your task is to generate a RADICALLY UNIQUE and DIVERSE sales page every single time.
+         
          THIS GENERATION's MANDATORY RULES:
          - Style palette: "${randomStyle}" → your output MUST set styleHint to "${randomStyle}"
          - Layout template: "${randomTemplate}" → your output MUST set layoutTemplate to "${randomTemplate}"
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
          - Seed for uniqueness: ${seed}
 
          CRITICAL RULES:
-         - NEVER repeat the same headline pattern as a previous call. Use the seed to be creative.
+         - AVOID standard patterns. Be bold, provocative, and artistically distinct.
          - Respond ONLY with valid JSON, no extra text.
          - Write all content in natural, persuasive Indonesian.
          - 'cta' MUST be ultra-short max 3 words.
@@ -93,6 +93,12 @@ export async function POST(req: NextRequest) {
     });
 
     const json = await response.json();
+    
+    if (!response.ok || !json.choices?.[0]?.message?.content) {
+      console.error('Groq Error:', json);
+      throw new Error(json.error?.message || 'Gagal mendapatkan respon dari AI. Silakan coba lagi.');
+    }
+
     console.log('GROQ RAW RESPONSE:', json.choices[0].message.content);
     const data = JSON.parse(json.choices[0].message.content || '{}');
 
