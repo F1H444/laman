@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer';
 export default function Home() {
   return (
     <div className="overflow-x-hidden relative bg-white dark:bg-black text-black dark:text-white selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500 ease-in-out">
+      <title>Beranda | Laman.ai</title>
 
       {/* 1. HERO — Full screen, centered */}
       <section className="w-full min-h-screen flex flex-col items-center justify-center text-center px-6 lg:px-8">

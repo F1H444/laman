@@ -321,6 +321,7 @@ function GeneratorContent() {
 
   return (
     <div className="h-full flex flex-col lg:flex-row bg-white dark:bg-black overflow-hidden relative transition-colors duration-500">
+      <title>Generator | Laman.ai</title>
       
       {/* Overlay for mobile/tablet when panel is open */}
       <AnimatePresence>

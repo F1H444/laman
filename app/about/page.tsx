@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer';
 export default function AboutPage() {
   return (
     <div className="overflow-x-hidden bg-white dark:bg-black text-black dark:text-white transition-colors duration-500 ease-in-out selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+      <title>Tentang | Laman.ai</title>
       
       {/* 1. HERO — Left-aligned editorial, full screen */}
       <section className="w-full min-h-screen flex flex-col justify-center max-w-7xl mx-auto px-6 lg:px-8">
