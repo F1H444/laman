@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* =============================================
+   View Transition — Silky Circle Reveal
+   Slower, smoother easing for a more cinematic feel
+   ============================================= */
+::view-transition-group(root) {
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.15, 1);
+}
+
+::view-transition-new(root) {
+  animation-name: circle-reveal;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  animation: none;
+  z-index: -1;
+}
+
+@keyframes circle-reveal {
+  from {
+    clip-path: circle(0% at 50% 50%);
+    opacity: 0.8;
+  }
+  to {
+    clip-path: circle(150% at 50% 50%);
+    opacity: 1;
+  }
+}
