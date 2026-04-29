@@ -57,7 +57,60 @@ export default function ViewSavedPage() {
           </div>
 
           <div className="flex items-center gap-2">
-             <button className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
+             <button 
+               onClick={() => {
+                 const container = document.getElementById('export-container');
+                 if (!container) return;
+                 const clone = container.cloneNode(true) as HTMLElement;
+                 clone.querySelectorAll('.export-ignore').forEach(el => el.remove());
+                 clone.querySelectorAll('input').forEach(el => el.remove());
+                 clone.querySelectorAll('button').forEach(el => el.remove());
+                 clone.querySelectorAll('.upload-placeholder-text').forEach(el => el.remove());
+                 clone.querySelectorAll('.cursor-pointer').forEach(el => el.classList.remove('cursor-pointer'));
+                 clone.querySelectorAll('.cursor-text').forEach(el => el.classList.remove('cursor-text'));
+                 clone.querySelectorAll('[contenteditable]').forEach(el => {
+                   el.removeAttribute('contenteditable');
+                   el.removeAttribute('suppresscontenteditablewarning');
+                 });
+                 
+                 const htmlContent = `<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.title}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      input, button.export-ignore, .export-ignore { display: none !important; }
+      [contenteditable] { pointer-events: none !important; cursor: default !important; }
+      body { margin: 0; padding: 0; overflow-x: hidden; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input, button, .export-ignore, .upload-placeholder-text').forEach(el => el.remove());
+        document.querySelectorAll('[contenteditable]').forEach(el => {
+          el.removeAttribute('contenteditable');
+          el.style.pointerEvents = 'none';
+          el.style.cursor = 'default';
+        });
+      });
+    </script>
+</head>
+<body>
+    ${clone.outerHTML}
+</body>
+</html>`;
+                 const blob = new Blob([htmlContent], { type: 'text/html' });
+                 const url = URL.createObjectURL(blob);
+                 const a = document.createElement('a');
+                 a.href = url;
+                 a.download = `${data.title.toLowerCase().replace(/\s+/g, '-')}.html`;
+                 a.click();
+                 URL.revokeObjectURL(url);
+               }}
+               className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
+             >
                 <Download size={14} /> Export HTML
              </button>
           </div>
@@ -69,6 +122,7 @@ export default function ViewSavedPage() {
         <LivePreview 
           data={data.generated_data} 
           onRegenerateSection={() => {}} // Disabled in view mode
+          productName={data.product_name}
         />
       </div>
     </div>

@@ -56,6 +56,13 @@ function GeneratorContent() {
   const [scale, setScale] = useState(1);
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // Refs to track latest state for saving (avoiding race conditions)
+  const dataRef = useRef<PageData | null>(null);
+  const formRef = useRef<any>(null);
+
+  useEffect(() => { dataRef.current = generatedData; }, [generatedData]);
+  useEffect(() => { formRef.current = formSnapshot; }, [formSnapshot]);
+
   useEffect(() => {
     if (activePageId) {
       setIsLoading(true);
@@ -202,7 +209,14 @@ function GeneratorContent() {
   };
 
   const handleSave = async () => {
-    if (!generatedData || !formSnapshot) return;
+    const currentData = dataRef.current;
+    const currentForm = formRef.current;
+    if (!currentData) return;
+
+    // Fallback product name and title
+    const productName = currentForm?.productName || currentData.headline || 'Project';
+    const pageTitle = currentData.headline || productName;
+
     setIsSaving(true);
     const method = activePageId ? 'PATCH' : 'POST';
     try {
@@ -211,10 +225,10 @@ function GeneratorContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: activePageId,
-          title: generatedData.headline,
-          product_name: formSnapshot.productName,
-          generated_data: generatedData,
-          form_snapshot: formSnapshot,
+          title: pageTitle,
+          product_name: productName,
+          generated_data: currentData,
+          form_snapshot: currentForm || { productName },
         }),
       });
       const json = await res.json();
@@ -255,6 +269,16 @@ function GeneratorContent() {
       el.removeAttribute('suppresscontenteditablewarning');
       el.classList.remove('cursor-text', 'hover:ring-2', 'hover:ring-indigo-500', 'hover:ring-white', 'outline-none');
     });
+
+    // Remove all inputs, buttons, and specific UI elements
+    clone.querySelectorAll('input').forEach(el => el.remove());
+    clone.querySelectorAll('button').forEach(el => el.remove());
+    clone.querySelectorAll('.export-ignore').forEach(el => el.remove());
+    clone.querySelectorAll('.upload-placeholder-text').forEach(el => el.remove());
+    
+    // Remove pointer events and cursor classes from placeholders
+    clone.querySelectorAll('.cursor-pointer').forEach(el => el.classList.remove('cursor-pointer'));
+    clone.querySelectorAll('.cursor-text').forEach(el => el.classList.remove('cursor-text'));
 
     // FIX: Force all elements to be visible by removing Framer Motion inline styles.
     // whileInView sets opacity:0 and transform on elements that haven't been scrolled into view yet.
@@ -301,7 +325,21 @@ function GeneratorContent() {
         overflow-x: hidden;
         font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       }
+      /* Ensure no inputs or hidden UI elements appear */
+      input, button.export-ignore, .export-ignore { display: none !important; }
+      [contenteditable] { pointer-events: none !important; cursor: default !important; }
     </style>
+    <script>
+      // Extra layer of protection: remove editor elements on load
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input, button, .export-ignore, .upload-placeholder-text').forEach(el => el.remove());
+        document.querySelectorAll('[contenteditable]').forEach(el => {
+          el.removeAttribute('contenteditable');
+          el.style.pointerEvents = 'none';
+          el.style.cursor = 'default';
+        });
+      });
+    </script>
 </head>
 <body>
     ${clone.outerHTML}
@@ -458,8 +496,20 @@ function GeneratorContent() {
                  <LivePreview 
                    data={generatedData} 
                    onRegenerateSection={handleRegenerateSection} 
-                   onUpdateData={(newData) => {
-                     setGeneratedData(prev => prev ? { ...prev, ...newData } : null);
+                   onUpdateData={(newData: any) => {
+                     // Update refs immediately to ensure handleSave has the latest data
+                     if (dataRef.current) {
+                       dataRef.current = { ...dataRef.current, ...newData };
+                     }
+                     
+                     // Specifically handle productName if it exists in newData (even if empty)
+                     if ('productName' in newData) {
+                       const updatedForm = formRef.current ? { ...formRef.current, productName: newData.productName } : { productName: newData.productName };
+                       formRef.current = updatedForm;
+                       setFormSnapshot({ ...updatedForm });
+                     }
+                     
+                     setGeneratedData((prev: any) => (prev ? { ...prev, ...newData } : null));
                      setSaveSuccess(false);
                    }}
                    viewMode={viewMode}

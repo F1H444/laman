@@ -24,7 +24,7 @@ interface PageData {
 interface LivePreviewProps {
   data: PageData | null;
   onRegenerateSection: (section: string, feedback?: string) => void;
-  onUpdateData?: (newData: Partial<PageData>) => void;
+  onUpdateData?: (newData: Partial<PageData> & { productName?: string }) => void;
   viewMode?: 'desktop' | 'tablet' | 'mobile';
   productName?: string;
 }
@@ -109,7 +109,7 @@ export default function LivePreview({ data, onRegenerateSection, onUpdateData, v
       ) : (
         <div className="text-center p-2 flex flex-col items-center opacity-50">
           <ImageIcon size={hideText ? 20 : 32} className={`${!hideText ? 'mb-4' : ''} ${currentStyle.muted}`} />
-          {!hideText && <span className={`text-xs font-bold uppercase tracking-widest ${currentStyle.muted}`}>Unggah Gambar</span>}
+          {!hideText && <span className={`text-xs font-bold uppercase tracking-widest upload-placeholder-text ${currentStyle.muted}`}>Unggah Gambar</span>}
         </div>
       )}
       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(id, e)} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
@@ -189,7 +189,16 @@ export default function LivePreview({ data, onRegenerateSection, onUpdateData, v
           <div className="w-[8cqw] @[768px]:w-10 h-[8cqw] @[768px]:h-10 flex-shrink-0">
             <ImagePlaceholder id="logo" hideText className="w-full h-full rounded-xl !p-0" />
           </div>
-          <div contentEditable suppressContentEditableWarning className="font-black italic text-[clamp(1.25rem,4cqw,2rem)] tracking-tighter outline-none cursor-text hover:ring-2 hover:ring-indigo-500 rounded px-2">
+          <div 
+            contentEditable 
+            suppressContentEditableWarning 
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+            onBlur={(e) => {
+              const val = e.currentTarget.textContent || '';
+              if (val !== productName) onUpdateData?.({ productName: val });
+            }}
+            className="font-black italic text-[clamp(1.25rem,4cqw,2rem)] tracking-tighter outline-none cursor-text hover:ring-2 hover:ring-indigo-500 rounded px-2"
+          >
             {productName || 'Brand.'}
           </div>
         </div>
@@ -262,12 +271,14 @@ export default function LivePreview({ data, onRegenerateSection, onUpdateData, v
             <div className="flex flex-col @[1024px]:flex-row items-stretch min-h-[60vh] gap-0 rounded-[3rem] overflow-hidden border border-black/10 dark:border-white/10 shadow-2xl">
               <div className="@[1024px]:w-1/2 p-[8cqw] flex flex-col justify-center bg-white dark:bg-[#0A0A0A]">
                 {data.headline && (
-                  <motion.h1 
-                    initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
-                    contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateData?.({ headline: e.currentTarget.textContent || '' })}
-                    className="text-3xl @[768px]:text-4xl @[1024px]:text-5xl font-black tracking-tighter leading-tight mb-6 outline-none hover:bg-black/5 dark:hover:bg-white/5 rounded-xl px-2 transition-all cursor-text">
-                    {data.headline}
-                  </motion.h1>
+                    <motion.h1 
+                      initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
+                      contentEditable suppressContentEditableWarning 
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+                      onBlur={(e) => onUpdateData?.({ headline: e.currentTarget.textContent || '' })}
+                      className="text-3xl @[768px]:text-4xl @[1024px]:text-5xl font-black tracking-tighter leading-tight mb-6 outline-none hover:bg-black/5 dark:hover:bg-white/5 rounded-xl px-2 transition-all cursor-text">
+                      {data.headline}
+                    </motion.h1>
                 )}
                 {data.subheadline && (
                   <motion.p 
@@ -542,7 +553,16 @@ export default function LivePreview({ data, onRegenerateSection, onUpdateData, v
               <div className="w-10 h-10 flex-shrink-0">
                 <ImagePlaceholder id="logo" hideText className="w-full h-full rounded-xl !p-0" />
               </div>
-              <div contentEditable suppressContentEditableWarning className="font-black italic text-3xl tracking-tighter outline-none cursor-text hover:ring-2 hover:ring-indigo-500 rounded px-2">
+              <div 
+                contentEditable 
+                suppressContentEditableWarning 
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+                onBlur={(e) => {
+                  const val = e.currentTarget.textContent || '';
+                  if (val !== productName) onUpdateData?.({ productName: val });
+                }}
+                className="font-black italic text-3xl tracking-tighter outline-none cursor-text hover:ring-2 hover:ring-indigo-500 rounded px-2"
+              >
                 {productName || 'Brand.'}
               </div>
             </div>
